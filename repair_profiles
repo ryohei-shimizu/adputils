@@ -9,7 +9,10 @@ profile_filter = ARGV
 service = AdpService.new
 client = service.create_client(team)
 
-registed_device_ids = client.devices.select{|d| d['deviceClass'] != 'tvOS'}.map {|d| d['deviceId'] }
+registed_device_ids = client.with_retry do
+  client.devices.select{|d| d['deviceClass'] != 'tvOS'}.map {|d| d['deviceId'] }
+end
+
 registed_certificate_ids = {:dev => [], :prd => [], :inhouse => [], :adhoc => []}
 Spaceship::Portal::Certificate.all.each do |c|
   if c.class == Spaceship::Portal::Certificate::Production
@@ -33,7 +36,9 @@ profiles.each do |profile|
     next
   end
   profile_id = profile['provisioningProfileId']
-  detail = client.provisioning_profile_details(provisioning_profile_id: profile_id)
+  detail = client.with_retry do
+    client.provisioning_profile_details(provisioning_profile_id: profile_id)
+  end
   name = detail['name']
   app_id = detail['appIdId']
   distribution_method = detail['distributionMethod']
@@ -64,5 +69,7 @@ profiles.each do |profile|
   end
 
   puts "repairing #{name}"
-  client.repair_provisioning_profile!(profile_id, name, distribution_method, app_id, certificates, devices)
+  client.with_retry do
+    client.repair_provisioning_profile!(profile_id, name, distribution_method, app_id, certificates, devices)
+  end
 end

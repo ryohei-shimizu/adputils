@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+require_relative 'lib/adp'
+require 'optparse'
+
+=begin
+Usage:
+  $ devices -t <YOUR_TEAM_ID> <CSV_FILE_PATH>
+
+If <CSV_FILE_PATH> does not exist, the result will be output to the standard output.
+Instead of redirecting stdout to a file, I recommend to give the CSV file path as an argument, because Spaceship puts messages to stdout when login error occurs.
+=end
+
+def write_to_file_if_needs_block(argv)
+  unless argv.empty? 
+    $stdout = File.open(argv[0], "w")
+  end
+
+  yield
+
+  unless argv.empty? 
+    $stdout.flush
+    $stdout.close
+    $stdout = STDOUT
+  end
+end
+
+params = ARGV.getopts('t:', 'team:')
+team = params['team'] || params['t']
+
+service = AdpService.new
+client = service.create_client(team)
+
+all_mac = Spaceship::Portal.device.all(mac: true, include_disabled: true)
+all_ios = Spaceship::Portal.device.all(mac: false, include_disabled: true)
+all_devices = (all_mac + all_ios).sort { |a, b| a.name <=> b.name }
+
+write_to_file_if_needs_block(ARGV) do 
+  puts %Q["NAME", "IDENTIFIER", "TYPE"]
+  all_devices.each do |device|
+    puts %Q["#{device.name}", "#{device.udid}", "#{device.device_type}"]
+  end
+end

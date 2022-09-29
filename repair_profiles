@@ -1,10 +1,24 @@
 #!/usr/bin/env ruby
 require_relative 'lib/adp'
 require 'optparse'
+require 'date'
 
-params = ARGV.getopts('ft:', 'force', 'team:')
+# 期限日が指定日数以内かどうかを判定。
+#
+# @param date [Date] チェックしたい期限日
+# @param from [Date] 基準となる日。デフォルトでは実行日時。
+# @param withinDays [Integer] 日数。デフォルトでは60日（約2ヶ月）
+# @return [bool] `date` が `from` から `withinDays` 日以内なら false を返す。
+def expires(date:, from: Date.today, withinDays: 60)
+  diff = date - from
+  diff.to_i < withinDays
+end
+
+
+params = ARGV.getopts('ft:', 'force', 'team:', 'expires-within-days:')
 team = params['team'] || params['t']
 force_repair = params['force'] || params['f']
+expires_within_days = params['expires-within-days'].to_i || 60 # デフォルトでは60日以内に期限切れを迎えるものは更新するようにする。
 profile_filter = ARGV
 
 service = AdpService.new
@@ -63,8 +77,9 @@ profiles.each do |profile|
   else
     certificates = registed_certificate_ids[:dev].sort
   end
-  
-  need_repair = (detail['status'] != 'Active') || (certificates != current_certificates) || (devices != current_devices)
+
+  date_expire = Date.parse(detail['dateExpire'])
+  need_repair = (detail['status'] != 'Active') || expires(date: date_expire, withinDays: expires_within_days) || (certificates != current_certificates) || (devices != current_devices)
   unless force_repair || need_repair
     next
   end

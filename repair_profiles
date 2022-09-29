@@ -2,8 +2,9 @@
 require_relative 'lib/adp'
 require 'optparse'
 
-params = ARGV.getopts('t:', 'team:')
+params = ARGV.getopts('ft:', 'force', 'team:')
 team = params['team'] || params['t']
+force_repair = params['force'] || params['f']
 profile_filter = ARGV
 
 service = AdpService.new
@@ -64,7 +65,7 @@ profiles.each do |profile|
   end
   
   need_repair = (detail['status'] != 'Active') || (certificates != current_certificates) || (devices != current_devices)
-  if !need_repair
+  unless force_repair || need_repair
     next
   end
 

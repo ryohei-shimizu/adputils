@@ -13,7 +13,7 @@ Apple Developer Progaram の各種作業をサポートするツール。
 破損したプロビジョニングプロファイルを再生成する。
 
 ```
-repair_profiles [-t TEAM_ID] [profile_name] ...
+repair_profiles [-t TEAM_ID] [-f] [--expires-within-days INT] [profile_name] ...
 ```
 
 以下の状態にあるプロファイルを破損として取り扱う。
@@ -21,8 +21,11 @@ repair_profiles [-t TEAM_ID] [profile_name] ...
 - Invalid になっているもの
 - プロファイルに対して登録できる証明書がすべて有効になっていないもの
 - プロファイルに対して登録できる UDID がすべて有効になっていないもの
+- `--expires-within-days` で指定された日数以内に期限切れをむかえるもの
 
 破損したプロファイルに対しては、登録できる証明書と UDID をすべて登録した状態で再発行する。
+
+`-f`, `--force` フラグを使うと上述の条件とは無関係に再発行する。
 
 `profile_name` を指定すると、その名前のプロファイルのみを対象にできる。
 
@@ -47,6 +50,16 @@ sync_deploygate_devices [-t TEAM_ID] [-u DEPLOYGATE_USER_ID] [-k DEPLOYGATE_API_
 - -u は `DEPLOYGATE_USER` と -k は `DEPLOYGATE_API_KEY` をそれぞれ環境変数で指定することで省略できる。
 - -n に ADP 登録名のプレフィクスを指定することができる。
 
+## devices
+
+```
+devices [-t TEAM_ID] [CSV_FILE_PATH]
+```
+
+登録されているデバイスの情報を CSV ファイルとして出力する。
+
+`CSV_FILE_PATH` が存在しない場合は標準出力に結果を出力する。
+ファイルとして書き出したい場合は `CSV_FILE_PATH` を使ってファイルパスを指定することを強くオススメする。なぜならリダイレクトを使うと Spaceship が吐くメッセージなども標準出力に出てしまうため。
 
 
 ## License

@@ -61,6 +61,15 @@ devices [-t TEAM_ID] [CSV_FILE_PATH]
 `CSV_FILE_PATH` が存在しない場合は標準出力に結果を出力する。
 ファイルとして書き出したい場合は `CSV_FILE_PATH` を使ってファイルパスを指定することを強くオススメする。なぜならリダイレクトを使うと Spaceship が吐くメッセージなども標準出力に出てしまうため。
 
+## disable_devices
+
+```
+disable_devices [-t TEAM_ID] [--dry-run] [UDID]...
+```
+
+引数で渡された UDID と登録されているデバイスがマッチした場合、そのデバイスを無効化する。
+
+`--dry-run` フラグを有効にした場合は無効化処理は行わず、マッチしたデバイスの情報を標準出力に出力する。
 
 ## License
 

@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+require_relative 'lib/adp'
+require 'optparse'
+require 'pp'
+
+=begin
+Usage:
+  $ disable_devices -t <YOUR_TEAM_ID> <UDID>...
+
+Disable all devices that matches given UDIDs. This is useful during the annual device removal process.
+=end
+
+params = ARGV.getopts('t:', 'team:', 'dry-run')
+team = params['team'] || params['t']
+is_dry_run = params['dry-run']
+udids = ARGV
+
+service = AdpService.new
+client = service.create_client(team)
+
+all_mac = Spaceship::Portal.device.all(mac: true, include_disabled: true)
+all_ios = Spaceship::Portal.device.all(mac: false, include_disabled: true)
+all_devices = (all_mac + all_ios).sort { |a, b| a.name <=> b.name }
+
+matched = all_devices.select { |d| udids.include?(d.udid) }
+
+if is_dry_run
+  puts "'--dry-run' is enabled"
+end
+
+puts "#{matched.length} devices will be disabled"
+
+matched.each do |device| 
+  if is_dry_run
+    puts %Q["#{device.name}", "#{device.udid}", "#{device.device_type}"]
+  else
+    puts "Disabling..."
+    puts %Q["#{device.name}", "#{device.udid}", "#{device.device_type}"]
+    device.disable!  
+  end
+end

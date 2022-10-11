@@ -35,8 +35,8 @@ all_ios = Spaceship::Portal.device.all(mac: false, include_disabled: true)
 all_devices = (all_mac + all_ios).sort { |a, b| a.name <=> b.name }
 
 write_to_file_if_needs_block(ARGV) do 
-  puts %Q["NAME", "IDENTIFIER", "TYPE"]
+  puts %Q["NAME", "IDENTIFIER", "TYPE", "ENABLED"]
   all_devices.each do |device|
-    puts %Q["#{device.name}", "#{device.udid}", "#{device.device_type}"]
+    puts %Q["#{device.name}", "#{device.udid}", "#{device.device_type}", "#{device.enabled?.to_s}"]
   end
 end

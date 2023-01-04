@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+require_relative 'lib/tunes'
+require 'optparse'
+require 'pp'
+
+=begin
+Usage:
+  $ members -t <YOUR_TEAM_ID> <CSV_FILE_PATH>
+
+If <CSV_FILE_PATH> does not exist, the result will be output to the standard output.
+Instead of redirecting stdout to a file, I recommend to give the CSV file path as an argument, because Spaceship puts messages to stdout when login error occurs.
+=end
+
+def write_to_file_if_needs_block(argv)
+  unless argv.empty? 
+    $stdout = File.open(argv[0], "w")
+  end
+
+  yield
+
+  unless argv.empty? 
+    $stdout.flush
+    $stdout.close
+    $stdout = STDOUT
+  end
+end
+
+params = ARGV.getopts('t:', 'team:')
+team = params['team'] || params['t']
+
+service = TunesService.new
+service.create_client(team)
+members = Spaceship::Tunes::Members.all
+members.sort! { |a, b| a.email_address <=> b.email_address }
+
+# pp members
+
+write_to_file_if_needs_block(ARGV) do 
+  puts %Q["EMAIL", "USERNAME", "LAST_NAME", "FIRST_NAME", "USER_ID", "INVITATION_ACCEPTED", "ROLES"]
+  members.each do |member|
+    puts %Q["#{member.email_address}", "#{member.username}", "#{member.lastname}", "#{member.firstname}", "#{member.user_id}", "#{member.not_accepted_invitation.to_s}", "#{member.roles.join("、 ")}"]
+  end
+end

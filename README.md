@@ -71,6 +71,17 @@ disable_devices [-t TEAM_ID] [--dry-run] [UDID]...
 
 `--dry-run` フラグを有効にした場合は無効化処理は行わず、マッチしたデバイスの情報を標準出力に出力する。
 
+## members
+
+```
+members [-t TEAM_ID] [CSV_FILE_PATH]
+```
+
+登録されているメンバーの一覧を CSV 形式で出力する。
+
+`CSV_FILE_PATH` が存在しない場合は標準出力に結果を出力する。
+ファイルとして書き出したい場合は `CSV_FILE_PATH` を使ってファイルパスを指定することを強くオススメする。なぜならリダイレクトを使うと Spaceship が吐くメッセージなども標準出力に出てしまうため。
+
 ## License
 
 MIT

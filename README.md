@@ -82,6 +82,19 @@ members [-t TEAM_ID] [CSV_FILE_PATH]
 `CSV_FILE_PATH` が存在しない場合は標準出力に結果を出力する。
 ファイルとして書き出したい場合は `CSV_FILE_PATH` を使ってファイルパスを指定することを強くオススメする。なぜならリダイレクトを使うと Spaceship が吐くメッセージなども標準出力に出てしまうため。
 
+## create_certificates
+
+```
+create_certificates [-t TEAM_ID] [-f] [-i BUNDLE_ID] [-nodev] [-noprd]
+```
+
+APNs SSL Certificates を生成し Keychain Access に登録する。
+p12 の書き出しは手動で行う。
+
+`-f`, `--force` は30日以上有効な証明書が存在していても再発行する。
+`-nodev` は Development SSL Certificate の作成をスキップする。
+`-noprd` は Production SSL Certificate の作成をスキップする。
+
 ## License
 
 MIT

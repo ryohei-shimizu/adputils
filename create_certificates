@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+def create_success(profile_path, pem_name)
+  require 'colored2'
+
+  puts 'Importing PEM into Keychain Access'.yellow
+  system("security import #{profile_path}")
+
+  puts 'IMPORTANT'.magenta.bold
+  puts "\tThe private key is registered in Keychain Access with the name \"Imported Private Key\"".magenta
+  puts "\tFor clarity, please change the name to: ".magenta
+  puts "\t\t" << pem_name.magenta.underline
+end
+
+def create_certificate(config)
+  require 'pem'
+
+  PEM.config = FastlaneCore::Configuration.create(PEM::Options.available_options, config)
+  profile_path = PEM::Manager.start
+  create_success(File.expand_path(profile_path), PEM.config[:pem_name]) if profile_path
+end
+
+def create_config(development, force, team, bundle_id, time_stamp)
+  {
+    "development": development,
+    "generate_p12": false,
+    "force": force,
+    "save_private_key": false,
+    "app_identifier": bundle_id,
+    "team_id": team,
+    "pem_name": "#{bundle_id}_aps-#{development ? 'development' : 'production'}_#{time_stamp}",
+    "output_path": "./output/certificates/#{team}/#{bundle_id}/#{time_stamp}"
+  }
+end
+
+params = ARGV.getopts('ft:i:', 'force', 'team:', 'bundle_id:', 'nodev', 'noprd')
+
+force = params['force'] || params['f']
+team = params['team'] || params['t']
+bundle_id = params['bundle_id'] || params['i']
+nodev = params['nodev']
+noprd = params['noprd']
+
+time_stamp = Time.now.strftime('%Y%m%d%H%M%S')
+
+dev_config = create_config(true, force, team, bundle_id, time_stamp)
+prd_config = create_config(false, force, team, bundle_id, time_stamp)
+
+create_certificate(dev_config) unless nodev
+create_certificate(prd_config) unless noprd
